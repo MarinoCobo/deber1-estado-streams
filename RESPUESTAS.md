@@ -8,14 +8,18 @@
 
 ### 1. ¿Qué pasó al salir de Control con el botón atrás del sistema?
 
-Partí de 3, entré a Control, pulsé **+1** (Control mostró 4) y salí con el botón atrás de
-Android. El visor siguió mostrando **"Contador: 3"**. Al cerrar y volver a abrir la app
-apareció **4**: el valor sí estaba guardado en disco.
+Corrí la app en macOS, donde el equivalente al botón atrás del sistema es la flecha **←**
+del `AppBar` (hace un `pop` sin devolver nada, igual que el botón de Android). Entré a
+Control, pulsé **+1** y salí con la flecha **←**: el visor se quedó con el número viejo, sin
+el último +1. En cambio, al salir con el botón **"Volver"** de la app, el visor sí mostraba el
+número correcto. Al cerrar la app (Cmd+Q) y volver a abrirla apareció el número completo: el
+valor sí estaba guardado en disco.
 
 Lo que quedó desactualizado fue la **copia** del contador que vive en el `State` de
-`PantallaVisor` (`_contador`). El botón atrás del sistema hace un `pop` sin valor, así que el
-`await Navigator.push<int>(...)` recibió `null` y el `setState` no se ejecutó. El disco decía
-4, la pantalla decía 3: había dos verdades distintas y nadie las sincronizaba.
+`PantallaVisor` (`_contador`). La flecha **←** (o el botón atrás del sistema) hace un `pop` sin valor, así
+que el `await Navigator.push<int>(...)` recibió `null` y el `setState` no se ejecutó. El
+disco tenía el número nuevo y la pantalla una copia vieja: había dos verdades distintas y
+nadie las sincronizaba.
 
 Para que el contador viajara entre las dos pantallas tuvieron que ponerse de acuerdo **cinco
 lugares** repartidos en dos archivos:
@@ -128,12 +132,12 @@ de contraseña muestra el texto, una animación).
 ### 6. ¿Por qué la pantalla siguió mostrando "Wi-Fi"?
 
 Porque la pantalla "Con Future" solo pregunta **cuando pulso el botón**. `consultarAhora()`
-devolvió `wifi` a las 10:42:15 (por ejemplo), el `Future` se completó, se hizo `setState`, y
+devolvió `wifi` a la hora que quedó en pantalla, el `Future` se completó, se hizo `setState`, y
 ahí terminó la relación entre la app y el sistema. Cuando apagué el Wi-Fi el sistema operativo
 sí se enteró, pero nadie en la app estaba escuchando.
 
 La app no tenía un dato incorrecto: tenía un **dato correcto de un momento equivocado**.
-"A las 10:42:15 había Wi-Fi" era verdad; el error es mostrarlo como si fuera el presente. Por
+"A esa hora había Wi-Fi" era verdad; el error es mostrarlo como si fuera el presente. Por
 eso la hora en pantalla es importante: es lo único que delata que es una foto vieja.
 
 ### 7. ¿Qué pasa si borras el `cancel()` y entras y sales 50 veces?
@@ -157,7 +161,7 @@ Cubit, y lo mismo al cambiar de la pestaña "Con Stream" a "Con Future".
 
 ### 8. ¿Por qué un Future es una foto y un Stream una película?
 
-Con el `Future` le pregunté al teléfono "¿cómo está la conexión?" y me contestó **una vez**.
+Con el `Future` le pregunté al sistema "¿cómo está la conexión?" y me contestó **una vez**.
 Esa respuesta quedó congelada en pantalla aunque el Wi-Fi ya estuviera apagado: una foto,
 con su hora, que envejece en cuanto la tomas. Para saber algo nuevo tengo que volver a
 tomar otra foto (pulsar "Consultar ahora").
